@@ -73,9 +73,9 @@ class MainActivity : Activity() {
         web.settings.javaScriptEnabled = true
         web.settings.domStorageEnabled = true
         web.settings.allowFileAccess = true
-        // La page est dessinée sur 1280 px de large et le WebView la met à l'échelle de l'écran
-        web.settings.useWideViewPort = true
-        web.settings.loadWithOverviewMode = true
+        web.settings.useWideViewPort = false
+        web.settings.loadWithOverviewMode = false
+        web.settings.textZoom = 100
         web.settings.setSupportZoom(false)
         web.settings.builtInZoomControls = false
         web.isVerticalScrollBarEnabled = false

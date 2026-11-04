@@ -2,13 +2,13 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=1280, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Clio Launcher</title>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
 html,body{margin:0;height:100%;background:#05070A;overflow:hidden;font-family:Roboto,"Segoe UI",system-ui,sans-serif;color:#F4F6F9}
 button{font-family:inherit;color:inherit;cursor:pointer}
-#stage{position:absolute;left:0;top:0;width:1280px;height:720px;transform-origin:0 0;background:radial-gradient(900px 500px at 70% -10%,#13233F 0%,#05070A 60%);overflow:hidden}
+#stage{position:fixed;left:0;top:0;right:0;bottom:0;width:100%;height:100%;background:radial-gradient(900px 500px at 70% -10%,#13233F 0%,#05070A 60%);overflow:hidden}
 .screen{position:absolute;inset:0;padding:14px;display:none}
 .screen.on{display:flex}
 .card{background:linear-gradient(180deg,#151A22,#0D1016);border:1px solid #FFFFFF14;border-radius:26px;box-shadow:inset 0 1px 0 #FFFFFF10}
@@ -337,10 +337,7 @@ function store(k,v){try{if(v===undefined){var r=localStorage.getItem(k);return r
 function toast(t){var el=$('#toast');el.textContent=t;el.style.display='block';clearTimeout(toast._t);toast._t=setTimeout(function(){el.style.display='none'},2600)}
 
 /* ---- Mise à l'échelle sur n'importe quel écran ---- */
-function fit(){var de=document.documentElement,w=Math.max(window.innerWidth||0,de.clientWidth||0),h=Math.max(window.innerHeight||0,de.clientHeight||0);if(!w||!h)return;
- var s=h/720,st=$('#stage');if(w/s<1100)s=w/1100;           /* hauteur de référence 720 px, largeur adaptée à l'écran */
- st.style.width=(w/s)+'px';st.style.height=(h/s)+'px';st.style.transform='scale('+s+')'}
-addEventListener('resize',fit);addEventListener('load',fit);fit();[200,800,2000,5000].forEach(function(t){setTimeout(fit,t)});
+/* L'interface occupe directement tout l'écran (1280 x 660 sur cet autoradio), sans mise à l'échelle. */
 
 /* ---- Écrans ---- */
 var current='home';
@@ -365,7 +362,7 @@ function tick(){var d=new Date(),h=pad(d.getHours())+':'+pad(d.getMinutes());$('
 tick();setInterval(tick,5000);
 
 /* ---- Raccourcis du dock (appui court = ouvrir, appui long = choisir l'appli) ---- */
-var DEFAULTS={nav:['com.waze','com.google.android.apps.maps'],music:['com.spotify.music','com.deezer.android.app','com.google.android.apps.youtube.music'],carplay:[],camera:[]};
+var DEFAULTS={nav:['com.waze','com.google.android.apps.maps'],music:['com.spotify.music','com.deezer.android.app','com.google.android.apps.youtube.music','com.hcn.AutoMediaPlayer'],carplay:['com.zjinnova.zlink'],camera:['com.auto.hcamera']};
 var NAMES={nav:'Navigation',music:'Musique',carplay:'CarPlay / Téléphone',camera:'Caméra'};
 function slot(name){var s=store('slots')||{};if(s[name])return s[name];if(!A)return null;var d=DEFAULTS[name]||[];for(var i=0;i<d.length;i++)if(A.hasApp(d[i]))return d[i];return null}
 function setSlot(name,pkg){var s=store('slots')||{};s[name]=pkg;store('slots',s);updateNavLabel()}
