@@ -1,0 +1,546 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>Clio Launcher</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+html,body{margin:0;height:100%;background:#05070A;overflow:hidden;font-family:Roboto,"Segoe UI",system-ui,sans-serif;color:#F4F6F9}
+button{font-family:inherit;color:inherit;cursor:pointer}
+#stage{position:absolute;left:0;top:0;width:1280px;height:720px;transform-origin:0 0;background:radial-gradient(900px 500px at 70% -10%,#13233F 0%,#05070A 60%);overflow:hidden}
+.screen{position:absolute;inset:0;padding:14px;display:none}
+.screen.on{display:flex}
+.card{background:linear-gradient(180deg,#151A22,#0D1016);border:1px solid #FFFFFF14;border-radius:26px;box-shadow:inset 0 1px 0 #FFFFFF10}
+.muted{color:#A7AFBB}
+.tile{width:58px;height:58px;border-radius:17px;border:none;display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:inset 0 1px 0 #FFFFFF40}
+.tile:active,.qbtn:active,.fav:active{transform:scale(.94)}
+.qbtn{height:66px;border-radius:20px;border:1px solid #FFFFFF14;background:#0E1117;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+.qbtn b{font-size:14px}.qbtn span{font-size:11px;color:#A7AFBB}
+.pill{display:flex;align-items:center;gap:6px;background:#0E1117;border:1px solid #FFFFFF14;color:#C3CAD4;padding:6px 11px;border-radius:999px;font-size:12px;font-weight:600}
+.dot{width:7px;height:7px;border-radius:50%}
+.fav{flex:1;height:84px;border-radius:20px;border:1px solid #FFFFFF14;background:#11161E;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:0 16px;gap:4px;text-align:left}
+.fav b{font-size:17px}.fav span{font-size:12px;color:#A7AFBB;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.back{width:52px;height:52px;border-radius:16px;border:1px solid #FFFFFF14;background:#11141A;display:flex;align-items:center;justify-content:center}
+.grid{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:18px;overflow-y:auto;padding:6px 4px 30px}
+.app{border:none;background:transparent;display:flex;flex-direction:column;align-items:center;gap:8px;padding:6px;border-radius:16px}
+.app img{width:72px;height:72px}
+.app span{font-size:13px;color:#D3D9E2;max-width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row{display:flex;justify-content:space-between;font-size:15px;padding:9px 0;border-bottom:1px solid #FFFFFF0F}
+.row span:last-child{font-weight:700;text-align:right;max-width:70%;word-break:break-all}
+#door{position:absolute;inset:0;background:#05070AE6;display:none;align-items:center;justify-content:center;z-index:50}
+#door.on{display:flex}
+.vcard{background:linear-gradient(180deg,#151A22,#0D1016);border:1px solid #FFFFFF14;border-radius:24px;padding:16px 18px;display:flex;flex-direction:column;justify-content:space-between;min-height:0}
+.vcard .t{display:flex;justify-content:space-between;align-items:center;font-size:14px;color:#A7AFBB}
+.vcard .v{font-size:40px;font-weight:800;line-height:1;letter-spacing:-1px}
+.vcard .s{font-size:12px;color:#A7AFBB}
+.bdg{padding:3px 8px;border-radius:999px;font-size:11px;font-weight:700;color:#fff}
+.b-obd{background:#1D4ED8}.b-calc{background:#0F766E}.b-user{background:#3A3F48}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:13px;color:#A7AFBB}
+.field input,.field select{height:50px;border-radius:14px;border:1px solid #2E343E;background:#11141A;color:#F4F6F9;font-size:17px;padding:0 14px;font-family:inherit}
+.big{height:56px;border-radius:16px;border:none;font-size:16px;font-weight:700;padding:0 22px}
+#alertBox{position:absolute;inset:0;background:#05070AE6;display:none;align-items:center;justify-content:center;z-index:55}
+#alertBox.on{display:flex}
+#toast{position:absolute;left:50%;bottom:30px;transform:translateX(-50%);background:#1B2029;border:1px solid #FFFFFF22;padding:12px 20px;border-radius:14px;font-size:15px;display:none;z-index:60}
+</style>
+</head>
+<body>
+<div id="stage">
+
+<!-- ================= ACCUEIL ================= -->
+<div class="screen on" id="home" style="gap:14px">
+  <nav class="card" style="width:86px;flex-shrink:0;border-radius:28px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:18px 0;background:#0E1117CC">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+      <span id="clock" style="font-size:25px;font-weight:800;letter-spacing:-.8px">--:--</span>
+      <span id="date" style="font-size:11px;color:#A7AFBB;letter-spacing:.3px"></span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <button class="tile" data-slot="nav" aria-label="Navigation" style="background:linear-gradient(160deg,#4C93FF,#1F5FE0)"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l18-8-8 18-2-8-8-2z"/></svg></button>
+      <button class="tile" data-slot="music" aria-label="Musique" style="background:linear-gradient(160deg,#FF6B85,#D9304F)"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></button>
+      <button class="tile" data-slot="carplay" aria-label="CarPlay / Téléphone" style="background:linear-gradient(160deg,#4CD98A,#1F9A52)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg></button>
+      <button class="tile" data-slot="camera" aria-label="Caméra" style="background:#1A1F28;border:1px solid #FFFFFF14;color:#E6EAF0;box-shadow:none"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg></button>
+      <button class="tile" id="btnApps" aria-label="Toutes les apps" style="background:#1A1F28;border:1px solid #FFFFFF14;color:#E6EAF0;box-shadow:none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></button>
+    </div>
+    <button id="btnDiag" aria-label="Réglages" style="width:48px;height:48px;border:none;background:transparent;color:#A7AFBB;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg></button>
+  </nav>
+
+  <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:12px">
+    <header style="height:38px;display:flex;align-items:center;justify-content:space-between;padding:0 4px">
+      <div style="display:flex;align-items:baseline;gap:14px">
+        <span id="hello" style="font-size:22px;font-weight:800;letter-spacing:-.4px">Bonjour Bilal</span>
+        <span id="subhello" class="muted" style="font-size:14px"></span>
+      </div>
+      <div style="display:flex;gap:8px">
+        <span class="pill"><span class="dot" id="gpsDot" style="background:#5A6270"></span><span id="gpsTxt">GPS</span></span>
+        <span class="pill" id="maintPill" style="display:none;background:#2A1A0C;border-color:#6B3A12;color:#FFD3A1"></span>
+        <span class="pill" id="tripPill" style="display:none;background:#0F2A1B;border-color:#1F5C3A;color:#9BE8BC">Trajet pro en cours</span>
+        <span class="pill"><span class="dot" id="obdDot" style="background:#5A6270"></span><span id="obdTxt">OBD</span></span>
+      </div>
+    </header>
+
+    <div style="flex:1;min-height:0;display:flex;gap:12px">
+      <!-- Navigation -->
+      <section class="card" style="flex:1.12;min-width:0;border-radius:28px;padding:22px;display:flex;flex-direction:column;justify-content:space-between;background:linear-gradient(170deg,#12223A,#0B1018 70%)">
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <span class="muted" style="font-size:14px;font-weight:600">Navigation</span>
+          <span style="font-size:36px;font-weight:800;letter-spacing:-1px">Où on va ?</span>
+          <span id="navApp" class="muted" style="font-size:13px"></span>
+        </div>
+        <svg viewBox="0 0 400 150" style="width:100%;height:150px" aria-hidden="true">
+          <path d="M10 120 C 90 40, 170 140, 250 70 S 360 40, 390 20" fill="none" stroke="#2F6FE0" stroke-opacity=".25" stroke-width="18" stroke-linecap="round"/>
+          <path d="M10 120 C 90 40, 170 140, 250 70 S 360 40, 390 20" fill="none" stroke="#4C93FF" stroke-width="5" stroke-linecap="round" stroke-dasharray="2 12"/>
+          <circle cx="10" cy="120" r="9" fill="#FFFFFF"/><circle cx="390" cy="20" r="9" fill="#4C93FF"/>
+        </svg>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;gap:10px">
+            <button class="fav" id="favHome"><b>Maison</b><span id="favHomeTxt">Appui long pour régler</span></button>
+            <button class="fav" id="favWork"><b>Travail</b><span id="favWorkTxt">Appui long pour régler</span></button>
+          </div>
+          <div style="display:flex;gap:10px">
+            <button class="fav" id="favParked"><b>Ma voiture</b><span id="favParkedTxt">Aucune position enregistrée</span></button>
+            <button class="fav" id="favSearch" style="background:linear-gradient(160deg,#4C93FF,#1F5FE0);border:none"><b>Rechercher</b><span style="color:#E3ECFB">Une adresse</span></button>
+          </div>
+        </div>
+      </section>
+
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:12px">
+        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+          <section class="card" style="height:184px;position:relative;display:flex;align-items:center;justify-content:center">
+            <svg width="164" height="164" viewBox="0 0 200 200" style="position:absolute" aria-hidden="true">
+              <circle cx="100" cy="100" r="84" fill="none" stroke="#232A35" stroke-width="12" stroke-dasharray="396 528" transform="rotate(135 100 100)" stroke-linecap="round"/>
+              <circle id="gauge" cx="100" cy="100" r="84" fill="none" stroke="#3B82F6" stroke-width="12" stroke-dasharray="0 528" transform="rotate(135 100 100)" stroke-linecap="round"/>
+            </svg>
+            <div style="display:flex;flex-direction:column;align-items:center;position:relative">
+              <span id="speed" style="font-size:54px;font-weight:800;letter-spacing:-2px;line-height:1">--</span>
+              <span class="muted" style="font-size:12px">km/h</span>
+            </div>
+          </section>
+          <button id="carCard" class="card" style="height:184px;padding:14px 16px;display:flex;flex-direction:column;justify-content:space-between;text-align:left">
+            <div style="display:flex;justify-content:space-between;align-items:center;width:100%">
+              <span class="muted" style="font-size:13px;font-weight:600">Ma Clio</span>
+              <span id="carBadge" style="font-size:11px;color:#C3CAD4;font-weight:700;background:#1A1F28;padding:3px 8px;border-radius:999px">OBD non connecté</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;width:100%">
+              <svg width="54" height="92" viewBox="0 0 54 92" fill="none" aria-hidden="true"><rect x="6" y="4" width="42" height="84" rx="18" fill="#232A35" stroke="#5A6474" stroke-width="1.5"/><path d="M12 30 Q27 22 42 30 L40 40 H14 Z" fill="#3A5A86"/><path d="M14 66 H40 L42 74 Q27 80 12 74 Z" fill="#3A5A86"/><rect x="14" y="42" width="26" height="22" rx="4" fill="#2B3340"/></svg>
+              <div style="flex:1;display:flex;flex-direction:column;gap:6px;font-size:13px">
+                <div style="display:flex;justify-content:space-between"><span class="muted">Moteur</span><b id="hCool">— °C</b></div>
+                <div style="display:flex;justify-content:space-between"><span class="muted">Conso moy.</span><b id="hAvg">— L</b></div>
+                <div style="display:flex;justify-content:space-between"><span class="muted">Batterie</span><b id="hVolt">— V</b></div>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:5px;width:100%">
+              <div style="height:6px;border-radius:3px;background:#232A35;overflow:hidden"><div id="hFuelBar" style="width:0%;height:6px;background:linear-gradient(90deg,#FFB04A,#E07A10)"></div></div>
+              <span id="hFuelTxt" class="muted" style="font-size:11px">Carburant : appuie sur « Plein fait »</span>
+            </div>
+          </button>
+        </div>
+
+        <section id="music" class="card" style="height:124px;padding:14px;display:flex;align-items:center;gap:14px;background:linear-gradient(120deg,#3A1735 0%,#1A1220 55%,#0F1117 100%)">
+          <div id="art" style="width:94px;height:94px;border-radius:16px;flex-shrink:0;background:#2A1630 center/cover no-repeat;display:flex;align-items:center;justify-content:center">
+            <svg id="artIcon" width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#F2A6C8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+          </div>
+          <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;flex-direction:column;gap:2px;min-width:0">
+              <span id="mTitle" style="font-size:18px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Rien en lecture</span>
+              <span id="mArtist" style="font-size:13px;color:#D9C3D6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Lance ta musique</span>
+            </div>
+            <div style="height:4px;border-radius:2px;background:#FFFFFF26;overflow:hidden"><div id="mBar" style="width:0%;height:4px;background:#fff"></div></div>
+          </div>
+          <div id="mCtrl" style="display:flex;align-items:center;gap:2px">
+            <button aria-label="Précédent" data-cmd="prev" style="width:46px;height:46px;border-radius:50%;border:none;background:transparent;display:flex;align-items:center;justify-content:center"><svg width="24" height="24" viewBox="0 0 24 24" fill="#fff"><path d="M6 6h2v12H6zM20 6v12L9.5 12z"/></svg></button>
+            <button aria-label="Lecture" data-cmd="toggle" style="width:56px;height:56px;border-radius:50%;border:none;background:#fff;color:#2A0F24;display:flex;align-items:center;justify-content:center"><svg id="mPlayIcon" width="24" height="24" viewBox="0 0 24 24" fill="#2A0F24"><path d="M7 5v14l12-7z"/></svg></button>
+            <button aria-label="Suivant" data-cmd="next" style="width:46px;height:46px;border-radius:50%;border:none;background:transparent;display:flex;align-items:center;justify-content:center"><svg width="24" height="24" viewBox="0 0 24 24" fill="#fff"><path d="M16 6h2v12h-2zM4 6v12l10.5-6z"/></svg></button>
+          </div>
+          <button id="mPerm" style="display:none;height:46px;padding:0 14px;border-radius:14px;border:none;background:#fff;color:#2A0F24;font-weight:700">Autoriser</button>
+        </section>
+
+        <section class="card" style="flex:1;min-height:0;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;background:linear-gradient(160deg,#142235,#0D1016)">
+          <div style="display:flex;align-items:center;gap:12px">
+            <svg width="46" height="46" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M18 10h-1.3A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" fill="#3A4A62" stroke="#9FB4D1" stroke-width="1.5"/></svg>
+            <div style="display:flex;flex-direction:column">
+              <span id="wTemp" style="font-size:36px;font-weight:800;line-height:1">--°</span>
+              <span id="wDesc" class="muted" style="font-size:12px">Météo…</span>
+            </div>
+          </div>
+          <div id="wHours" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;text-align:center;font-size:12px"></div>
+        </section>
+
+        <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px">
+          <button class="qbtn" id="qPark"><b>Garé ici</b><span>Mémoriser</span></button>
+          <button class="qbtn" id="qTrip"><b>Trajet pro</b><span id="qTripTxt">Démarrer</span></button>
+          <button class="qbtn" id="qFuel"><b>Plein fait</b><span>Réservoir plein</span></button>
+          <button class="qbtn" id="qDrive" style="background:linear-gradient(160deg,#4C93FF,#1F5FE0);border:none"><b>Conduite</b><span style="color:#E3ECFB">Plein écran</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= CONDUITE ================= -->
+<div class="screen" id="drive" style="background:#050608;gap:16px;align-items:stretch;padding:24px">
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:space-between">
+    <button class="back" data-go="home" aria-label="Retour"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <div><div id="dClock" style="font-size:80px;font-weight:800;letter-spacing:-3px">--:--</div><div id="dDate" class="muted" style="font-size:20px"></div></div>
+  </div>
+  <div style="flex:1.2;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative">
+    <svg width="420" height="420" viewBox="0 0 200 200" style="position:absolute" aria-hidden="true">
+      <circle cx="100" cy="100" r="88" fill="none" stroke="#1A1E26" stroke-width="10" stroke-dasharray="415 553" transform="rotate(135 100 100)" stroke-linecap="round"/>
+      <circle id="dGauge" cx="100" cy="100" r="88" fill="none" stroke="#3B82F6" stroke-width="10" stroke-dasharray="0 553" transform="rotate(135 100 100)" stroke-linecap="round"/>
+    </svg>
+    <span id="dSpeed" style="font-size:170px;font-weight:800;letter-spacing:-7px;line-height:1;position:relative">--</span>
+    <span class="muted" style="font-size:24px;position:relative">km/h</span>
+  </div>
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;gap:16px">
+    <div class="card" style="padding:22px;border-radius:30px">
+      <div id="dTitle" style="font-size:22px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">—</div>
+      <div id="dArtist" class="muted" style="font-size:16px;margin-top:4px">—</div>
+      <div style="display:flex;justify-content:space-between;margin-top:18px">
+        <button data-cmd="prev" style="width:70px;height:70px;border-radius:50%;border:none;background:#1A1E26;display:flex;align-items:center;justify-content:center"><svg width="30" height="30" viewBox="0 0 24 24" fill="#fff"><path d="M6 6h2v12H6zM20 6v12L9.5 12z"/></svg></button>
+        <button data-cmd="toggle" style="width:84px;height:84px;border-radius:50%;border:none;background:#fff;display:flex;align-items:center;justify-content:center"><svg width="34" height="34" viewBox="0 0 24 24" fill="#050608"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg></button>
+        <button data-cmd="next" style="width:70px;height:70px;border-radius:50%;border:none;background:#1A1E26;display:flex;align-items:center;justify-content:center"><svg width="30" height="30" viewBox="0 0 24 24" fill="#fff"><path d="M16 6h2v12h-2zM4 6v12l10.5-6z"/></svg></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= APPS ================= -->
+<div class="screen" id="apps" style="flex-direction:column;gap:14px;padding:20px">
+  <div style="display:flex;align-items:center;gap:14px">
+    <button class="back" data-go="home" aria-label="Retour"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <span id="appsTitle" style="font-size:26px;font-weight:800">Toutes les apps</span>
+  </div>
+  <div class="grid" id="appGrid"></div>
+</div>
+
+<!-- ================= DIAGNOSTIC ================= -->
+<div class="screen" id="diag" style="flex-direction:column;gap:14px;padding:20px">
+  <div style="display:flex;align-items:center;justify-content:space-between">
+    <div style="display:flex;align-items:center;gap:14px">
+      <button class="back" data-go="home" aria-label="Retour"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+      <span style="font-size:26px;font-weight:800">Diagnostic & réglages</span>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="qbtn" style="width:190px" id="setHome"><b>Définir comme accueil</b><span>Réglage Android</span></button>
+      <button class="qbtn" style="width:150px" id="setAndroid"><b>Réglages Android</b><span>Ouvrir</span></button>
+      <button class="qbtn" style="width:150px" id="qDoor"><b>Test porte</b><span>Aperçu pop-up</span></button>
+    </div>
+  </div>
+  <div style="flex:1;min-height:0;display:flex;gap:14px">
+    <div class="card" style="flex:1;padding:8px 20px;overflow-y:auto" id="diagList"></div>
+    <div class="card" style="flex:1;padding:16px 20px;overflow-y:auto">
+      <div style="font-size:15px;font-weight:700;margin-bottom:8px">Applis liées à la voiture</div>
+      <div id="diagPk" class="muted" style="font-size:14px;line-height:1.7"></div>
+      <div style="font-size:15px;font-weight:700;margin:14px 0 8px">Bluetooth Android</div>
+      <div id="diagBt" class="muted" style="font-size:14px;line-height:1.7"></div>
+    </div>
+  </div>
+  <div class="muted" style="font-size:13px">Prends cet écran en photo et envoie-le-moi.</div>
+</div>
+
+<!-- ================= VEHICULE ================= -->
+<div class="screen" id="car" style="flex-direction:column;gap:12px;padding:18px 20px">
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+    <div style="display:flex;align-items:center;gap:14px">
+      <button class="back" data-go="home" aria-label="Retour"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+      <div style="display:flex;flex-direction:column"><span style="font-size:26px;font-weight:800">Ma Clio III</span><span id="cOdo" class="muted" style="font-size:13px">— km</span></div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <span class="pill"><span class="dot" id="cDot" style="background:#5A6270"></span><span id="cStatus">OBD non connecté</span></span>
+      <button class="qbtn" style="width:130px" id="cFuel"><b>Plein fait</b><span>Recaler</span></button>
+      <button class="qbtn" style="width:130px" id="cSet"><b>Réglages</b><span>Voiture & OBD</span></button>
+    </div>
+  </div>
+  <div style="flex:1;min-height:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr));gap:12px">
+    <div class="vcard" style="grid-column:span 2"><div class="t">Régime moteur<span class="bdg b-obd">OBD2</span></div><div style="display:flex;align-items:baseline;gap:8px"><span class="v" id="cRpm" style="font-size:52px">—</span><span class="s">tr/min</span></div><div style="height:12px;border-radius:6px;background:#232A35;overflow:hidden"><div id="cRpmBar" style="width:0%;height:12px;background:linear-gradient(90deg,#3B82F6,#FFB04A 75%,#FF5A61)"></div></div></div>
+    <div class="vcard"><div class="t">Temp. moteur<span class="bdg b-obd">OBD2</span></div><span class="v" id="cCool">—</span><span class="s" id="cCoolS">°C</span></div>
+    <div class="vcard"><div class="t">Batterie<span class="bdg b-obd">OBD2</span></div><span class="v" id="cVolt">—</span><span class="s" id="cVoltS">volts</span></div>
+    <div class="vcard"><div class="t">Conso instantanée<span class="bdg b-calc">Calculé</span></div><span class="v" id="cInst">—</span><span class="s" id="cInstS">L/100 km</span></div>
+    <div class="vcard"><div class="t">Conso moyenne<span class="bdg b-calc">Calculé</span></div><span class="v" id="cAvg">—</span><span class="s" id="cAvgS">L/100 km · depuis le plein</span></div>
+    <div class="vcard" style="grid-column:span 2"><div class="t">Carburant & autonomie<span class="bdg b-calc" id="cFuelBadge">Calculé</span></div><div style="display:flex;align-items:baseline;gap:16px"><span class="v" id="cRange">—</span><span id="cFuelPct" style="font-size:16px;color:#C3CAD4"></span></div><div style="display:flex;flex-direction:column;gap:6px"><div style="height:10px;border-radius:5px;background:#232A35;overflow:hidden"><div id="cFuelBar" style="width:0%;height:10px;background:linear-gradient(90deg,#FFB04A,#E07A10)"></div></div><span class="s" id="cFuelS">Appuie sur « Plein fait » quand le réservoir est plein</span></div></div>
+    <div class="vcard"><div class="t">Codes défaut<span class="bdg b-obd">OBD2</span></div><span class="v" id="cDtc" style="font-size:24px">—</span><div style="display:flex;gap:8px"><button class="big" id="cDtcRead" style="flex:1;height:44px;background:#1A1E26;color:#fff;font-size:14px">Lire</button><button class="big" id="cDtcClear" style="flex:1;height:44px;background:#3A1A1D;color:#FF9AA1;font-size:14px">Effacer</button></div></div>
+    <div class="vcard"><div class="t">Moteur<span class="bdg b-obd">OBD2</span></div><div style="display:flex;flex-direction:column;gap:7px;font-size:15px"><div style="display:flex;justify-content:space-between"><span class="muted">Charge</span><b id="cLoad">—</b></div><div style="display:flex;justify-content:space-between"><span class="muted">Papillon</span><b id="cThr">—</b></div><div style="display:flex;justify-content:space-between"><span class="muted">Air admission</span><b id="cIat">—</b></div><div style="display:flex;justify-content:space-between"><span class="muted">Vitesse OBD</span><b id="cSpd">—</b></div></div></div>
+    <div class="vcard"><div class="t">Entretien<span class="bdg b-user">Saisi</span></div><div style="display:flex;flex-direction:column;gap:7px;font-size:15px"><div style="display:flex;justify-content:space-between"><span class="muted">Vidange</span><b id="cOil">—</b></div><div style="display:flex;justify-content:space-between"><span class="muted">Contrôle tech.</span><b id="cCt">—</b></div><div style="display:flex;justify-content:space-between"><span class="muted">Assurance</span><b id="cIns">—</b></div></div></div>
+    <div class="vcard"><div class="t">Trajets pro<span class="bdg b-calc">GPS</span></div><span class="v" id="cTripMonth" style="font-size:32px">0 km</span><span class="s" id="cTripS">ce mois-ci</span></div>
+  </div>
+</div>
+
+<!-- ================= REGLAGES VEHICULE ================= -->
+<div class="screen" id="carset" style="flex-direction:column;gap:14px;padding:20px">
+  <div style="display:flex;align-items:center;justify-content:space-between">
+    <div style="display:flex;align-items:center;gap:14px">
+      <button class="back" data-go="car" aria-label="Retour"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+      <span style="font-size:26px;font-weight:800">Réglages voiture & OBD</span>
+    </div>
+    <button class="big" id="sSave" style="background:linear-gradient(160deg,#4C93FF,#1F5FE0);color:#fff">Enregistrer</button>
+  </div>
+  <div style="flex:1;min-height:0;overflow-y:auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px 20px;align-content:start">
+    <div class="field"><label>Carburant</label><select id="sFuelType"><option value="essence">Essence</option><option value="diesel">Diesel</option></select></div>
+    <div class="field"><label>Cylindrée (litres)</label><input id="sCc" type="number" step="0.1" placeholder="1.2"></div>
+    <div class="field"><label>Réservoir (litres)</label><input id="sTank" type="number" placeholder="55"></div>
+    <div class="field"><label>Kilométrage actuel du compteur</label><input id="sOdo" type="number" placeholder="ex. 142380"></div>
+    <div class="field"><label>Prochaine vidange (km compteur)</label><input id="sOil" type="number" placeholder="ex. 145000"></div>
+    <div class="field"><label>Contrôle technique (date)</label><input id="sCt" type="date"></div>
+    <div class="field"><label>Échéance assurance (date)</label><input id="sIns" type="date"></div>
+    <div class="field"><label>Adaptateur OBD2</label><select id="sObdMode"><option value="bt">Bluetooth</option><option value="wifi">Wi-Fi</option><option value="off">Désactivé</option></select></div>
+    <div class="field"><label>Nom Bluetooth ou IP:port Wi-Fi (vide = automatique)</label><input id="sObdTarget" type="text" placeholder="OBDII ou 192.168.0.10:35000"></div>
+  </div>
+  <div class="muted" style="font-size:13px">Bluetooth : appaire d’abord l’adaptateur dans les réglages Bluetooth d’Android (code souvent 1234 ou 0000).</div>
+</div>
+
+<!-- ================= ALERTE ================= -->
+<div id="alertBox">
+  <div style="width:620px;background:linear-gradient(180deg,#2A1215,#12090B);border:1px solid #FF5A6188;box-shadow:0 30px 80px #000000B3;border-radius:34px;padding:32px 36px;display:flex;flex-direction:column;gap:14px">
+    <span style="font-size:14px;font-weight:800;color:#FF9AA1;letter-spacing:.6px">⚠ ALERTE VÉHICULE</span>
+    <span id="alertTitle" style="font-size:38px;font-weight:800;letter-spacing:-1px;line-height:1.1"></span>
+    <span id="alertText" style="font-size:17px;color:#E3C7CA;line-height:1.45"></span>
+    <button class="big" id="alertOk" style="align-self:flex-start;background:#fff;color:#2A0F12;margin-top:6px">Compris</button>
+  </div>
+</div>
+
+<!-- ================= POP-UP PORTE ================= -->
+<div id="door">
+  <div style="width:600px;background:linear-gradient(180deg,#1B2029,#0E1117);border:1px solid #FF5A6166;box-shadow:0 30px 80px #000000B3;border-radius:34px;padding:28px 32px;display:flex;align-items:center;gap:30px">
+    <svg width="190" height="292" viewBox="0 0 260 400" style="flex-shrink:0" aria-hidden="true">
+      <rect x="70" y="40" width="120" height="320" rx="52" fill="#232A35" stroke="#6B7586" stroke-width="2"/>
+      <path d="M86 120 Q130 100 174 120 L168 140 H92 Z" fill="#3A5A86"/>
+      <rect x="92" y="148" width="76" height="106" rx="10" fill="#2B3340"/>
+      <path d="M92 262 H168 L174 288 Q130 304 86 288 Z" fill="#3A5A86"/>
+      <rect x="56" y="124" width="14" height="10" rx="4" fill="#6B7586"/><rect x="190" y="124" width="14" height="10" rx="4" fill="#6B7586"/>
+      <g id="d-fl" opacity="0"><line x1="70" y1="136" x2="70" y2="208" stroke="#FF5A61" stroke-width="6"/><line x1="70" y1="136" x2="14" y2="186" stroke="#FF5A61" stroke-width="10" stroke-linecap="round"/></g>
+      <g id="d-rl" opacity="0"><line x1="70" y1="212" x2="70" y2="280" stroke="#FF5A61" stroke-width="6"/><line x1="70" y1="212" x2="14" y2="262" stroke="#FF5A61" stroke-width="10" stroke-linecap="round"/></g>
+      <g id="d-fr" opacity="0"><line x1="190" y1="136" x2="190" y2="208" stroke="#FF5A61" stroke-width="6"/><line x1="190" y1="136" x2="246" y2="186" stroke="#FF5A61" stroke-width="10" stroke-linecap="round"/></g>
+      <g id="d-rr" opacity="0"><line x1="190" y1="212" x2="190" y2="280" stroke="#FF5A61" stroke-width="6"/><line x1="190" y1="212" x2="246" y2="262" stroke="#FF5A61" stroke-width="10" stroke-linecap="round"/></g>
+      <rect id="d-tr" opacity="0" x="90" y="346" width="80" height="46" rx="10" fill="#FF5A61"/>
+    </svg>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <span style="font-size:13px;font-weight:700;color:#FF9AA1;letter-spacing:.6px">⚠ ATTENTION</span>
+      <span id="doorLabel" style="font-size:34px;font-weight:800;letter-spacing:-.8px;line-height:1.1"></span>
+      <span class="muted" style="font-size:15px;line-height:1.4">Ce message disparaît tout seul dès que c’est refermé.</span>
+    </div>
+  </div>
+</div>
+<div id="toast"></div>
+</div>
+
+<script>
+var A = window.Android || null;
+function $(s){return document.querySelector(s)}
+function $$(s){return Array.prototype.slice.call(document.querySelectorAll(s))}
+function store(k,v){try{if(v===undefined){var r=localStorage.getItem(k);return r?JSON.parse(r):null}localStorage.setItem(k,JSON.stringify(v))}catch(e){return null}}
+function toast(t){var el=$('#toast');el.textContent=t;el.style.display='block';clearTimeout(toast._t);toast._t=setTimeout(function(){el.style.display='none'},2600)}
+
+/* ---- Mise à l'échelle sur n'importe quel écran ---- */
+function fit(){var s=Math.min(innerWidth/1280,innerHeight/720),st=$('#stage');st.style.transform='translate('+((innerWidth-1280*s)/2)+'px,'+((innerHeight-720*s)/2)+'px) scale('+s+')'}
+addEventListener('resize',fit);fit();
+
+/* ---- Écrans ---- */
+var current='home';
+function go(id){$$('.screen').forEach(function(e){e.classList.remove('on')});$('#'+id).classList.add('on');current=id;if(id==='diag')renderDiag()}
+window.onBack=function(){if($('#alertBox').classList.contains('on')){$('#alertBox').classList.remove('on');return}if($('#door').classList.contains('on')){hideDoor();return}go(current==='carset'?'car':'home')};
+$$('[data-go]').forEach(function(b){b.onclick=function(){go(b.getAttribute('data-go'))}});
+
+/* ---- Appui long ---- */
+function longPress(el,fn,short){var t=null,fired=false;
+ el.addEventListener('touchstart',function(){fired=false;t=setTimeout(function(){fired=true;fn()},650)},{passive:true});
+ el.addEventListener('touchend',function(e){clearTimeout(t);if(fired){e.preventDefault()}});
+ el.addEventListener('touchmove',function(){clearTimeout(t)},{passive:true});
+ el.addEventListener('contextmenu',function(e){e.preventDefault();fired=true;fn()});
+ el.addEventListener('click',function(){if(!fired&&short)short();fired=false});}
+
+/* ---- Heure ---- */
+var JOURS=['DIM.','LUN.','MAR.','MER.','JEU.','VEN.','SAM.'],MOIS=['JANV.','FÉVR.','MARS','AVR.','MAI','JUIN','JUIL.','AOÛT','SEPT.','OCT.','NOV.','DÉC.'];
+function pad(n){return n<10?'0'+n:''+n}
+function tick(){var d=new Date(),h=pad(d.getHours())+':'+pad(d.getMinutes());$('#clock').textContent=h;$('#dClock').textContent=h;
+ var ds=JOURS[d.getDay()]+' '+d.getDate()+' '+MOIS[d.getMonth()];$('#date').textContent=ds;$('#dDate').textContent=ds.toLowerCase();
+ var hr=d.getHours();$('#hello').textContent=(hr>=18||hr<5?'Bonsoir':'Bonjour')+' Bilal'}
+tick();setInterval(tick,5000);
+
+/* ---- Raccourcis du dock (appui court = ouvrir, appui long = choisir l'appli) ---- */
+var DEFAULTS={nav:['com.waze','com.google.android.apps.maps'],music:['com.spotify.music','com.deezer.android.app','com.google.android.apps.youtube.music'],carplay:[],camera:[]};
+var NAMES={nav:'Navigation',music:'Musique',carplay:'CarPlay / Téléphone',camera:'Caméra'};
+function slot(name){var s=store('slots')||{};if(s[name])return s[name];if(!A)return null;var d=DEFAULTS[name]||[];for(var i=0;i<d.length;i++)if(A.hasApp(d[i]))return d[i];return null}
+function setSlot(name,pkg){var s=store('slots')||{};s[name]=pkg;store('slots',s);updateNavLabel()}
+$$('[data-slot]').forEach(function(b){var n=b.getAttribute('data-slot');
+ longPress(b,function(){openPicker(n)},function(){var p=slot(n);if(p&&A&&A.launch(p))return;openPicker(n)})});
+$('#btnApps').onclick=function(){openPicker(null)};
+$('#btnDiag').onclick=function(){go('diag')};
+$('#qDrive').onclick=function(){go('drive')};
+
+var picking=null;
+function openPicker(n){picking=n;$('#appsTitle').textContent=n?('Choisis l’appli pour « '+NAMES[n]+' »'):'Toutes les apps';go('apps');renderApps()}
+function renderApps(){var g=$('#appGrid');g.innerHTML='';if(!A){g.textContent='Disponible sur l’autoradio.';return}
+ var list=[];try{list=JSON.parse(A.apps())}catch(e){}
+ list.forEach(function(a){var b=document.createElement('button');b.className='app';
+  b.innerHTML=(a.icon?'<img src="data:image/png;base64,'+a.icon+'">':'<div style="width:72px;height:72px;border-radius:18px;background:#1A1F28"></div>')+'<span></span>';
+  b.querySelector('span').textContent=a.label;
+  b.onclick=function(){if(picking){setSlot(picking,a.pkg);toast('« '+NAMES[picking]+' » → '+a.label);picking=null;go('home')}else A.launch(a.pkg)};
+  g.appendChild(b)})}
+
+/* ---- Navigation & favoris ---- */
+function updateNavLabel(){var p=slot('nav');$('#navApp').textContent=p?('Avec '+(p==='com.waze'?'Waze':p.indexOf('maps')>=0?'Google Maps':p)):'Appui long sur l’icône bleue pour choisir ton GPS'}
+function nav(q,lat,lng){if(!A)return;if(!A.navigate(q||'',lat||0,lng||0))toast('Aucune appli GPS trouvée')}
+function favSetup(key,el,txt,label){function refresh(){var v=store(key);$(txt).textContent=v||'Appui long pour régler'}refresh();
+ longPress($(el),function(){var v=prompt('Adresse « '+label+' » :',store(key)||'');if(v!==null){store(key,v.trim());refresh()}},function(){var v=store(key);if(v)nav(v);else toast('Fais un appui long pour enregistrer l’adresse')})}
+favSetup('favHome','#favHome','#favHomeTxt','Maison');favSetup('favWork','#favWork','#favWorkTxt','Travail');
+$('#favSearch').onclick=function(){var v=prompt('Où veux-tu aller ?','');if(v)nav(v)};
+function refreshParked(){var p=store('parked');$('#favParkedTxt').textContent=p?('Garée à '+p.time):'Aucune position enregistrée'}
+refreshParked();
+$('#favParked').onclick=function(){var p=store('parked');if(p)nav('',p.lat,p.lng);else toast('Appuie sur « Garé ici » en arrivant')};
+$('#qPark').onclick=function(){if(!lastPos){toast('Pas encore de position GPS');return}var d=new Date();store('parked',{lat:lastPos.lat,lng:lastPos.lng,time:pad(d.getHours())+':'+pad(d.getMinutes())+' le '+d.getDate()+'/'+(d.getMonth()+1)});refreshParked();toast('Position de la voiture enregistrée')};
+updateNavLabel();
+
+/* ---- GPS & vitesse ---- */
+var lastPos=null,lastWeather=0;
+window.onGps=function(kmh,lat,lng){lastPos={lat:lat,lng:lng};$('#gpsDot').style.background='#3FD47F';$('#gpsDot').style.boxShadow='0 0 8px #3FD47F';
+ if(kmh>=0){$('#speed').textContent=kmh;$('#dSpeed').textContent=kmh;var f=Math.min(kmh/180,1);$('#gauge').setAttribute('stroke-dasharray',(396*f)+' 528');$('#dGauge').setAttribute('stroke-dasharray',(415*f)+' 553')}
+ if(Date.now()-lastWeather>15*60000)loadWeather()};
+
+/* ---- Météo (Open-Meteo, gratuit, sans clé) ---- */
+function wLabel(c){if(c===0)return'Dégagé';if(c<=2)return'Peu nuageux';if(c===3)return'Couvert';if(c<=48)return'Brouillard';if(c<=57)return'Bruine';if(c<=67)return'Pluie';if(c<=77)return'Neige';if(c<=82)return'Averses';if(c<=86)return'Averses de neige';return'Orage'}
+function loadWeather(){lastWeather=Date.now();var lat=lastPos?lastPos.lat:50.836,lng=lastPos?lastPos.lng:4.308;
+ fetch('https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lng+'&current=temperature_2m,weather_code&hourly=temperature_2m,weather_code&forecast_days=2&timezone=auto')
+ .then(function(r){return r.json()}).then(function(d){
+  $('#wTemp').textContent=Math.round(d.current.temperature_2m)+'°';$('#wDesc').textContent=wLabel(d.current.weather_code);
+  $('#subhello').textContent=Math.round(d.current.temperature_2m)+' °C dehors · '+wLabel(d.current.weather_code).toLowerCase();
+  var now=d.current.time.slice(0,13),i=d.hourly.time.findIndex(function(t){return t.slice(0,13)>now}),h='';
+  if(i<0)i=0;for(var k=i;k<i+4&&k<d.hourly.time.length;k++){var c=d.hourly.weather_code[k],wet=c>=51;
+   h+='<div style="display:flex;flex-direction:column;gap:3px"><span class="muted">'+parseInt(d.hourly.time[k].slice(11,13),10)+'h</span><span style="font-weight:700;color:'+(wet?'#7FB2FF':'#C3CAD4')+'">'+wLabel(c)+'</span><span style="font-weight:700;font-size:14px">'+Math.round(d.hourly.temperature_2m[k])+'°</span></div>'}
+  $('#wHours').innerHTML=h})
+ .catch(function(){$('#wDesc').textContent='Pas de connexion';lastWeather=Date.now()-14*60000})}
+loadWeather();
+
+/* ---- Musique ---- */
+var playing=false;
+function fmtArt(a){return a?'url(data:image/jpeg;base64,'+a+')':''}
+function pollMedia(){if(!A)return;var m;try{m=JSON.parse(A.media())}catch(e){return}
+ if(!m.ok&&m.perm){$('#mPerm').style.display='block';$('#mCtrl').style.display='none';$('#mTitle').textContent='Musique';$('#mArtist').textContent='Autorise l’accès pour voir le morceau';return}
+ $('#mPerm').style.display='none';$('#mCtrl').style.display='flex';
+ if(m.none||!m.title){$('#mTitle').textContent='Rien en lecture';$('#mArtist').textContent='Lance ta musique';$('#mBar').style.width='0%';$('#dTitle').textContent='—';$('#dArtist').textContent='—';playing=false}
+ else{$('#mTitle').textContent=m.title;$('#mArtist').textContent=m.artist||'';$('#dTitle').textContent=m.title;$('#dArtist').textContent=m.artist||'';
+  $('#mBar').style.width=(m.duration>0?Math.min(100,m.position/m.duration*100):0)+'%';playing=m.playing;
+  var art=$('#art');if(m.art){art.style.backgroundImage=fmtArt(m.art);$('#artIcon').style.display='none'}else{art.style.backgroundImage='';$('#artIcon').style.display='block'}}
+ $('#mPlayIcon').innerHTML=playing?'<path d="M7 5h4v14H7zM13 5h4v14h-4z"/>':'<path d="M7 5v14l12-7z"/>'}
+$$('[data-cmd]').forEach(function(b){b.onclick=function(){if(!A)return;var c=b.getAttribute('data-cmd');if(c==='toggle')c=playing?'pause':'play';A.mediaCmd(c);setTimeout(pollMedia,400)}});
+$('#mPerm').onclick=function(){if(A)A.openNotifAccess()};
+setInterval(pollMedia,1000);pollMedia();
+
+/* ---- Pop-up porte ---- */
+var DOORS={fl:'Porte avant gauche ouverte',fr:'Porte avant droite ouverte',rl:'Porte arrière gauche ouverte',rr:'Porte arrière droite ouverte',tr:'Coffre ouvert'};
+window.showDoor=function(k){Object.keys(DOORS).forEach(function(d){$('#d-'+d).setAttribute('opacity',d===k?'1':'0')});$('#doorLabel').textContent=DOORS[k]||'';$('#door').classList.add('on')};
+window.hideDoor=function(){$('#door').classList.remove('on')};
+var demo=['fl','fr','rl','rr','tr'],demoI=0;
+$('#qDoor').onclick=function(){showDoor(demo[demoI%5]);demoI++;setTimeout(hideDoor,2500)};
+$('#door').onclick=hideDoor;
+
+/* ---- Diagnostic ---- */
+function renderDiag(){if(!A){$('#diagList').textContent='Disponible sur l’autoradio.';return}var d={};try{d=JSON.parse(A.diag())}catch(e){}
+ var L={android_affiche:'Android affiché',api_reelle:'Niveau d’API réel',noyau:'Noyau',ecran:'Écran',fabricant:'Fabricant',modele:'Modèle',marque:'Marque',materiel:'Matériel',carte:'Carte',produit:'Produit',version_app:'Version de l’app'},h='';
+ Object.keys(L).forEach(function(k){h+='<div class="row"><span class="muted">'+L[k]+'</span><span>'+(d[k]===undefined?'?':String(d[k]).replace(/</g,'&lt;'))+'</span></div>'});
+ $('#diagList').innerHTML=h;
+ try{var b=JSON.parse(A.btInfo());$('#diagBt').innerHTML=(b.present?'Présent':'Absent (le Bluetooth de l’autoradio n’est pas accessible aux applis)')+(b.present?(' · '+(b.active?'activé':'désactivé')):'')+'<br>Appairés : '+((b['appairés']||[]).join(', ')||'aucun')}catch(e){}$('#diagPk').innerHTML=(d.applis_voiture||[]).map(function(p){return String(p).replace(/</g,'&lt;')}).join('<br>')||'Aucune trouvée'}
+$('#setHome').onclick=function(){if(A)A.openHomeSettings()};
+$('#setAndroid').onclick=function(){if(A)A.openSettings()};
+window.onResumeApp=function(){pollMedia();updateNavLabel()};
+
+/* ================= VÉHICULE / OBD ================= */
+function car(){var c=store('car')||{};if(!c.fuelType)c.fuelType='essence';if(!c.cc)c.cc=1.2;if(!c.tank)c.tank=55;if(!c.obdMode)c.obdMode='bt';if(c.obdTarget===undefined)c.obdTarget='';return c}
+var odo=store('odo')||{base:0,added:0};          // km compteur saisi + km parcourus depuis
+var fuel=store('fuel')||null;                      // {used, dist, since}
+var obd={},obdOk=false,obdLast=0,lastTick=0,instLh=null,alerted={};
+function saveAll(){store('odo',odo);if(fuel)store('fuel',fuel)}
+setInterval(saveAll,15000);
+function totalKm(){return Math.round((odo.base||0)+(odo.added||0))}
+function addDist(km){if(!(km>0)||km>1)return;odo.added=(odo.added||0)+km;if(fuel)fuel.dist+=km;var t=store('tripActive');if(t){t.km+=km;store('tripActive',t)}}
+
+/* Distance via GPS quand l'OBD ne donne pas la vitesse */
+var gpsPrev=null;
+var _onGps=window.onGps;
+window.onGps=function(kmh,lat,lng){_onGps(kmh,lat,lng);
+ if(gpsPrev&&kmh>2&&!(obdOk&&obd.speed!==undefined)){var R=6371,dLa=(lat-gpsPrev.lat)*Math.PI/180,dLo=(lng-gpsPrev.lng)*Math.PI/180,
+  x=Math.sin(dLa/2)*Math.sin(dLa/2)+Math.cos(gpsPrev.lat*Math.PI/180)*Math.cos(lat*Math.PI/180)*Math.sin(dLo/2)*Math.sin(dLo/2);addDist(R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x)))}
+ gpsPrev={lat:lat,lng:lng};renderCar()};
+
+/* Débit de carburant en L/h à partir du MAF, ou du MAP (méthode speed-density) */
+function fuelRateLh(o){var c=car(),maf=null;
+ if(o.maf!==undefined)maf=o.maf;
+ else if(o.map!==undefined&&o.rpm!==undefined&&o.iat!==undefined){maf=(o.map*1000*(c.cc/1000)*(o.rpm/120)*0.80)/(287.05*(o.iat+273.15))*1000}
+ if(maf===null)return null;
+ if(c.fuelType==='diesel')return maf*3600/(25*832);   // approximation, le diesel n'a pas de richesse fixe
+ return maf*3600/(14.7*737)}
+
+window.onObdStatus=function(st){var T={connecting:'OBD : connexion…',ok:'OBD connecté',lost:'OBD : connexion perdue',bt_absent:'Bluetooth Android absent',bt_off:'Bluetooth désactivé',bt_none:'Aucun adaptateur appairé',no_ecu:'Adaptateur OK, voiture muette (contact ?)',off:'OBD désactivé'};
+ obdOk=(st==='ok');var col=obdOk?'#3FD47F':(st==='connecting'?'#FFB04A':'#5A6270');
+ $('#obdDot').style.background=col;$('#cDot').style.background=col;$('#obdTxt').textContent=obdOk?'OBD':'OBD —';
+ $('#cStatus').textContent=T[st]||st;$('#carBadge').textContent=obdOk?'OBD connecté':'OBD non connecté';$('#carBadge').style.color=obdOk?'#3FD47F':'#C3CAD4'};
+
+window.onObd=function(o){
+ if(o.dtc){$('#cDtc').textContent=o.dtc.length?o.dtc.join(' · '):'Aucun défaut';$('#cDtc').style.color=o.dtc.length?'#FFB35C':'#3FD47F';return}
+ if(o.cleared){$('#cDtc').textContent='Codes effacés';toast('Codes défaut effacés');return}
+ for(var k in o)obd[k]=o[k];obdLast=Date.now();
+ var now=Date.now(),dt=lastTick?Math.min((now-lastTick)/1000,5):0;lastTick=now;
+ if(o.speed!==undefined){addDist(o.speed*dt/3600);if(current!=='drive'||true){$('#speed').textContent=o.speed;$('#dSpeed').textContent=o.speed}}
+ var lh=fuelRateLh(obd);instLh=lh;if(lh!==null&&fuel){fuel.used+=lh*dt/3600}
+ checkAlerts();renderCar()};
+
+function checkAlerts(){var t=Date.now();
+ function once(k,title,text){if(alerted[k]&&t-alerted[k]<5*60000)return;alerted[k]=t;showAlert(title,text)}
+ if(obd.coolant>=105)once('hot','Moteur trop chaud',obd.coolant+' °C. Arrête-toi dès que possible en sécurité et laisse refroidir, ne rouvre pas le vase d’expansion à chaud.');
+ if(obd.volt&&obd.volt<12.2&&obd.rpm>600)once('volt','Tension batterie basse',obd.volt.toFixed(1)+' V moteur tournant. L’alternateur ou la batterie peut être en cause, fais vérifier.')}
+function showAlert(t,x){$('#alertTitle').textContent=t;$('#alertText').textContent=x;$('#alertBox').classList.add('on')}
+$('#alertOk').onclick=function(){$('#alertBox').classList.remove('on')};
+
+function fmt(n,d){return (Math.round(n*Math.pow(10,d))/Math.pow(10,d)).toFixed(d).replace('.',',')}
+function daysTo(s){if(!s)return null;return Math.ceil((new Date(s)-new Date())/86400000)}
+function frDate(s){if(!s)return'—';var p=s.split('-');return p[2]+'/'+p[1]+'/'+p[0]}
+function renderCar(){var c=car(),fresh=obdOk&&Date.now()-obdLast<5000;
+ function set(id,v){var e=$(id);if(e)e.textContent=v}
+ set('#cRpm',fresh&&obd.rpm!==undefined?obd.rpm.toLocaleString('fr-BE'):'—');$('#cRpmBar').style.width=(fresh&&obd.rpm?Math.min(100,obd.rpm/70):0)+'%';
+ set('#cCool',fresh&&obd.coolant!==undefined?obd.coolant+' °C':'—');set('#hCool',fresh&&obd.coolant!==undefined?obd.coolant+' °C':'— °C');
+ set('#cCoolS',fresh&&obd.coolant!==undefined?(obd.coolant<70?'Moteur encore froid':obd.coolant<102?'Température normale':'Trop chaud !'):'°C');
+ set('#cVolt',fresh&&obd.volt?fmt(obd.volt,1)+' V':'—');set('#hVolt',fresh&&obd.volt?fmt(obd.volt,1)+' V':'— V');
+ set('#cVoltS',fresh&&obd.volt?(obd.rpm>600?(obd.volt>=13.2?'Alternateur OK':'Charge faible'):(obd.volt>=12.4?'Batterie OK':'Batterie faible')):'volts');
+ set('#cLoad',fresh&&obd.load!==undefined?obd.load+' %':'—');set('#cThr',fresh&&obd.throttle!==undefined?obd.throttle+' %':'—');
+ set('#cIat',fresh&&obd.iat!==undefined?obd.iat+' °C':'—');set('#cSpd',fresh&&obd.speed!==undefined?obd.speed+' km/h':'—');
+ var sp=fresh&&obd.speed!==undefined?obd.speed:null;
+ if(fresh&&instLh!==null){if(sp>5){set('#cInst',fmt(instLh/sp*100,1));set('#cInstS','L/100 km'+(c.fuelType==='diesel'?' (approx.)':''))}else{set('#cInst',fmt(instLh,1));set('#cInstS','L/h (à l’arrêt)')}}else{set('#cInst','—');set('#cInstS','L/100 km')}
+ var avg=fuel&&fuel.dist>3&&fuel.used>0?fuel.used/fuel.dist*100:null;
+ set('#cAvg',avg?fmt(avg,1):'—');set('#hAvg',avg?fmt(avg,1)+' L':'— L');
+ var pct=null,src='calc';
+ if(fresh&&obd.fuel!==undefined){pct=obd.fuel;src='obd'}else if(fuel){pct=Math.max(0,100-fuel.used/c.tank*100)}
+ if(pct!==null){var remL=c.tank*pct/100,rng=remL/(avg||6.5)*100;
+  set('#cRange','~'+Math.round(rng)+' km');set('#cFuelPct','≈ '+Math.round(pct)+' % du réservoir');$('#cFuelBar').style.width=pct+'%';$('#hFuelBar').style.width=pct+'%';
+  set('#hFuelTxt','Carburant '+(src==='obd'?'':'estimé ')+'· ~'+Math.round(rng)+' km');
+  set('#cFuelS',src==='obd'?'Jauge lue par OBD':'Estimé depuis le dernier plein ('+fmt(fuel.used,1)+' L consommés)');$('#cFuelBadge').textContent=src==='obd'?'OBD2':'Calculé'}
+ set('#cOdo',(odo.base?totalKm().toLocaleString('fr-BE')+' km':'Kilométrage à saisir dans Réglages'));
+ set('#cOil',c.oilKm&&odo.base?(c.oilKm-totalKm()>0?'dans '+(c.oilKm-totalKm()).toLocaleString('fr-BE')+' km':'à faire !'):'—');
+ var ct=daysTo(c.ct),ins=daysTo(c.ins);set('#cCt',c.ct?frDate(c.ct):'—');set('#cIns',c.ins?frDate(c.ins):'—');
+ var warn=[];if(c.oilKm&&odo.base&&c.oilKm-totalKm()<1000)warn.push('Vidange');if(ct!==null&&ct<=30)warn.push('Contrôle technique');if(ins!==null&&ins<=30)warn.push('Assurance');
+ var mp=$('#maintPill');if(warn.length){mp.style.display='flex';mp.textContent='Bientôt : '+warn.join(', ')}else mp.style.display='none';
+ var trips=store('trips')||[],m=new Date().toISOString().slice(0,7),km=0,n=0;trips.forEach(function(t){if(t.start.slice(0,7)===m){km+=t.km;n++}});
+ var ta=store('tripActive');set('#cTripMonth',Math.round(km+(ta?ta.km:0))+' km');set('#cTripS',n+' trajet'+(n>1?'s':'')+' ce mois-ci'+(ta?' · 1 en cours':''));
+ $('#tripPill').style.display=ta?'flex':'none';$('#qTripTxt').textContent=ta?('En cours · '+fmt(ta.km,1)+' km'):'Démarrer'}
+
+/* Boutons véhicule */
+$('#carCard').onclick=function(){go('car')};
+function fillUp(){fuel={used:0,dist:0,since:new Date().toISOString()};store('fuel',fuel);toast('Réservoir plein enregistré');renderCar()}
+$('#qFuel').onclick=fillUp;$('#cFuel').onclick=fillUp;
+$('#cDtcRead').onclick=function(){if(!obdOk){toast('OBD non connecté');return}$('#cDtc').textContent='Lecture…';A.obdCmd('dtc')};
+$('#cDtcClear').onclick=function(){if(!obdOk){toast('OBD non connecté');return}if(confirm('Effacer les codes défaut ? Le voyant moteur s’éteindra, mais le problème, lui, reste s’il n’est pas réparé.'))A.obdCmd('clear')};
+$('#qTrip').onclick=function(){var ta=store('tripActive');
+ if(ta){var t=store('trips')||[];ta.end=new Date().toISOString();t.push(ta);store('trips',t);localStorage.removeItem('tripActive');toast('Trajet pro terminé : '+fmt(ta.km,1)+' km')}
+ else{store('tripActive',{start:new Date().toISOString(),km:0});toast('Trajet pro démarré')}renderCar()};
+
+/* Réglages */
+$('#cSet').onclick=function(){var c=car();$('#sFuelType').value=c.fuelType;$('#sCc').value=c.cc;$('#sTank').value=c.tank;$('#sOdo').value=odo.base?totalKm():'';
+ $('#sOil').value=c.oilKm||'';$('#sCt').value=c.ct||'';$('#sIns').value=c.ins||'';$('#sObdMode').value=c.obdMode;$('#sObdTarget').value=c.obdTarget||'';go('carset')};
+$('#sSave').onclick=function(){var c=car();c.fuelType=$('#sFuelType').value;c.cc=parseFloat($('#sCc').value)||1.2;c.tank=parseFloat($('#sTank').value)||55;
+ var o=parseInt($('#sOdo').value,10);if(o>0&&o!==totalKm()){odo={base:o,added:0};store('odo',odo)}
+ c.oilKm=parseInt($('#sOil').value,10)||null;c.ct=$('#sCt').value||null;c.ins=$('#sIns').value||null;
+ var modeChanged=(c.obdMode!==$('#sObdMode').value)||(c.obdTarget!==$('#sObdTarget').value.trim());c.obdMode=$('#sObdMode').value;c.obdTarget=$('#sObdTarget').value.trim();
+ store('car',c);if(modeChanged)startObd();toast('Réglages enregistrés');renderCar();go('car')};
+function startObd(){if(!A)return;var c=car();if(c.obdMode==='off'){A.obdStop();onObdStatus('off');return}A.obdStart(c.obdMode,c.obdTarget||'')}
+startObd();renderCar();
+</script>
+</body>
+</html>
