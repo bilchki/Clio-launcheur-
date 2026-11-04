@@ -337,8 +337,10 @@ function store(k,v){try{if(v===undefined){var r=localStorage.getItem(k);return r
 function toast(t){var el=$('#toast');el.textContent=t;el.style.display='block';clearTimeout(toast._t);toast._t=setTimeout(function(){el.style.display='none'},2600)}
 
 /* ---- Mise à l'échelle sur n'importe quel écran ---- */
-function fit(){var s=Math.min(innerWidth/1280,innerHeight/720),st=$('#stage');st.style.transform='translate('+((innerWidth-1280*s)/2)+'px,'+((innerHeight-720*s)/2)+'px) scale('+s+')'}
-addEventListener('resize',fit);fit();
+function fit(){var de=document.documentElement,w=Math.max(window.innerWidth||0,de.clientWidth||0),h=Math.max(window.innerHeight||0,de.clientHeight||0);if(!w||!h)return;
+ var s=h/720,st=$('#stage');if(w/s<1100)s=w/1100;           /* hauteur de référence 720 px, largeur adaptée à l'écran */
+ st.style.width=(w/s)+'px';st.style.height=(h/s)+'px';st.style.transform='scale('+s+')'}
+addEventListener('resize',fit);addEventListener('load',fit);fit();[200,800,2000,5000].forEach(function(t){setTimeout(fit,t)});
 
 /* ---- Écrans ---- */
 var current='home';

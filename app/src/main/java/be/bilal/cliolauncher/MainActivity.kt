@@ -73,6 +73,9 @@ class MainActivity : Activity() {
         web.settings.javaScriptEnabled = true
         web.settings.domStorageEnabled = true
         web.settings.allowFileAccess = true
+        web.settings.useWideViewPort = false
+        web.settings.loadWithOverviewMode = false
+        web.setInitialScale(0)
         web.webViewClient = WebViewClient()
         web.webChromeClient = WebChromeClient()
         web.addJavascriptInterface(Bridge(), "Android")
