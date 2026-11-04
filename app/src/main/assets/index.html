@@ -235,9 +235,10 @@ button{font-family:inherit;color:inherit;cursor:pointer}
       <div id="diagBt" class="muted" style="font-size:14px;line-height:1.7"></div>
       <div style="font-size:15px;font-weight:700;margin:14px 0 8px">Au démarrage de l’autoradio</div>
       <div style="display:flex;gap:10px;margin-bottom:6px">
-        <button class="qbtn" style="flex:1" id="aMusic"><b>Relancer la musique</b><span id="aMusicTxt">—</span></button>
+        <button class="qbtn" style="flex:1" id="aMusic"><b>Son au démarrage</b><span id="aMusicTxt">—</span></button>
         <button class="qbtn" style="flex:1" id="aNav"><b>Ouvrir le GPS</b><span id="aNavTxt">—</span></button>
       </div>
+      <button class="qbtn" style="width:100%;margin-top:10px" id="aRadioPick"><b>Appli radio utilisée</b><span id="aRadioTxt">—</span></button>
       <div style="font-size:15px;font-weight:700;margin:14px 0 8px">Applis liées à la voiture</div>
       <div id="diagPk" class="muted" style="font-size:14px;line-height:1.7"></div>
     </div>
@@ -380,8 +381,8 @@ function tick(){var d=new Date(),h=pad(d.getHours())+':'+pad(d.getMinutes());$('
 tick();setInterval(tick,5000);
 
 /* ---- Raccourcis du dock (appui court = ouvrir, appui long = choisir l'appli) ---- */
-var DEFAULTS={nav:['com.waze','com.google.android.apps.maps'],music:['com.spotify.music','com.deezer.android.app','com.google.android.apps.youtube.music','com.hcn.AutoMediaPlayer'],carplay:['com.zjinnova.zlink'],camera:['com.auto.hcamera']};
-var NAMES={nav:'Navigation',music:'Musique',carplay:'CarPlay / Téléphone',camera:'Caméra'};
+var DEFAULTS={nav:['com.waze','com.google.android.apps.maps'],music:['com.spotify.music','com.deezer.android.app','com.google.android.apps.youtube.music','com.hcn.AutoMediaPlayer'],carplay:['com.zjinnova.zlink'],camera:['com.auto.hcamera'],radio:['com.hcn.autoradio']};
+var NAMES={nav:'Navigation',music:'Musique',carplay:'CarPlay / Téléphone',camera:'Caméra',radio:'Radio'};
 function slot(name){var s=store('slots')||{};if(s[name])return s[name];if(!A)return null;var d=DEFAULTS[name]||[];for(var i=0;i<d.length;i++)if(A.hasApp(d[i]))return d[i];return null}
 function setSlot(name,pkg){var s=store('slots')||{};s[name]=pkg;store('slots',s);updateNavLabel()}
 $$('[data-slot]').forEach(function(b){var n=b.getAttribute('data-slot');
@@ -568,15 +569,21 @@ function startObd(){if(!A)return;var c=car();if(c.obdMode==='off'){A.obdStop();o
 startObd();renderCar();
 
 /* ================= DÉMARRAGE AUTO & MISE À JOUR ================= */
-function autoCfg(){var a=store('auto');if(!a)a={music:true,nav:true};return a}
-function renderAuto(){var a=autoCfg();$('#aMusicTxt').textContent=a.music?'Activé':'Désactivé';$('#aMusicTxt').style.color=a.music?'#3FD47F':'#A7AFBB';
- $('#aNavTxt').textContent=a.nav?'Activé':'Désactivé';$('#aNavTxt').style.color=a.nav?'#3FD47F':'#A7AFBB'}
-$('#aMusic').onclick=function(){var a=autoCfg();a.music=!a.music;store('auto',a);renderAuto()};
+function autoCfg(){var a=store('auto')||{};if(!a.sound)a.sound='radio';if(a.nav===undefined)a.nav=false;return a}
+var SOUNDS=['radio','music','none'],SOUND_TXT={radio:'Radio FM',music:'Dernière musique',none:'Rien'};
+function renderAuto(){var a=autoCfg();$('#aMusicTxt').textContent=SOUND_TXT[a.sound];$('#aMusicTxt').style.color=a.sound==='none'?'#A7AFBB':'#3FD47F';
+ $('#aNavTxt').textContent=a.nav?'Activé':'Désactivé';$('#aNavTxt').style.color=a.nav?'#3FD47F':'#A7AFBB';
+ var r=slot('radio');$('#aRadioTxt').textContent=r||'Aucune trouvée, appuie pour choisir'}
+$('#aMusic').onclick=function(){var a=autoCfg();a.sound=SOUNDS[(SOUNDS.indexOf(a.sound)+1)%3];store('auto',a);renderAuto()};
 $('#aNav').onclick=function(){var a=autoCfg();a.nav=!a.nav;store('auto',a);renderAuto()};
+$('#aRadioPick').onclick=function(){openPicker('radio')};
 renderAuto();
-window.onAutoStart=function(reason){if(!A)return;var a=autoCfg();
- if(a.music)A.mediaPlay();
- if(a.nav){var p=slot('nav');if(p)setTimeout(function(){A.launch(p)},2500)}};
+window.onAutoStart=function(reason){if(!A)return;var a=autoCfg(),nav=a.nav?slot('nav'):null;
+ if(a.sound==='music')A.mediaPlay();
+ if(a.sound==='radio'){var r=slot('radio');
+  if(r&&A.launch(r)){ /* la radio démarre, puis on revient sur l'accueil (ou le GPS) */
+   setTimeout(function(){if(nav)A.launch(nav);else A.bringHome()},3500);return}}
+ if(nav)setTimeout(function(){A.launch(nav)},2500)};
 $('#qUpdate').onclick=function(){if(A)A.openUrl('https://github.com/bilchki/Clio-launcheur-/releases/latest/download/ClioLauncher.apk')};
 </script>
 </body>

@@ -326,6 +326,14 @@ class MainActivity : Activity() {
         }
 
         @JavascriptInterface
+        fun bringHome() {
+            try {
+                startActivity(Intent(this@MainActivity, MainActivity::class.java)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_REORDER_TO_FRONT))
+            } catch (e: Exception) { }
+        }
+
+        @JavascriptInterface
         fun openUrl(url: String) {
             try { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) } catch (e: Exception) { }
         }
