@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<meta name="viewport" content="width=1280, user-scalable=no">
 <title>Clio Launcher</title>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
@@ -445,6 +445,7 @@ $('#door').onclick=hideDoor;
 function renderDiag(){if(!A){$('#diagList').textContent='Disponible sur l’autoradio.';return}var d={};try{d=JSON.parse(A.diag())}catch(e){}
  var L={android_affiche:'Android affiché',api_reelle:'Niveau d’API réel',noyau:'Noyau',ecran:'Écran',fabricant:'Fabricant',modele:'Modèle',marque:'Marque',materiel:'Matériel',carte:'Carte',produit:'Produit',version_app:'Version de l’app'},h='';
  Object.keys(L).forEach(function(k){h+='<div class="row"><span class="muted">'+L[k]+'</span><span>'+(d[k]===undefined?'?':String(d[k]).replace(/</g,'&lt;'))+'</span></div>'});
+ h+='<div class="row"><span class="muted">Vue web</span><span>'+innerWidth+' x '+innerHeight+' · ratio '+(window.devicePixelRatio||1)+'</span></div>';
  $('#diagList').innerHTML=h;
  try{var b=JSON.parse(A.btInfo());$('#diagBt').innerHTML=(b.present?'Présent':'Absent (le Bluetooth de l’autoradio n’est pas accessible aux applis)')+(b.present?(' · '+(b.active?'activé':'désactivé')):'')+'<br>Appairés : '+((b['appairés']||[]).join(', ')||'aucun')}catch(e){}$('#diagPk').innerHTML=(d.applis_voiture||[]).map(function(p){return String(p).replace(/</g,'&lt;')}).join('<br>')||'Aucune trouvée'}
 $('#setHome').onclick=function(){if(A)A.openHomeSettings()};
