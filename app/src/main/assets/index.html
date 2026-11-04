@@ -28,6 +28,7 @@ button{font-family:inherit;color:inherit;cursor:pointer}
 .app span{font-size:13px;color:#D3D9E2;max-width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .row{display:flex;justify-content:space-between;font-size:15px;padding:9px 0;border-bottom:1px solid #FFFFFF0F}
 .row span:last-child{font-weight:700;text-align:right;max-width:70%;word-break:break-all}
+[style*="overflow-y:auto"]{-webkit-overflow-scrolling:touch;touch-action:pan-y}
 #door{position:absolute;inset:0;background:#05070AE6;display:none;align-items:center;justify-content:center;z-index:50}
 #door.on{display:flex}
 .vcard{background:linear-gradient(180deg,#151A22,#0D1016);border:1px solid #FFFFFF14;border-radius:24px;padding:16px 18px;display:flex;flex-direction:column;justify-content:space-between;min-height:0}
@@ -230,15 +231,15 @@ button{font-family:inherit;color:inherit;cursor:pointer}
   <div style="flex:1;min-height:0;display:flex;gap:14px">
     <div class="card" style="flex:1;padding:8px 20px;overflow-y:auto" id="diagList"></div>
     <div class="card" style="flex:1;padding:16px 20px;overflow-y:auto">
-      <div style="font-size:15px;font-weight:700;margin-bottom:8px">Applis liées à la voiture</div>
-      <div id="diagPk" class="muted" style="font-size:14px;line-height:1.7"></div>
+      <div style="font-size:15px;font-weight:700;margin:0 0 8px">Bluetooth Android</div>
+      <div id="diagBt" class="muted" style="font-size:14px;line-height:1.7"></div>
       <div style="font-size:15px;font-weight:700;margin:14px 0 8px">Au démarrage de l’autoradio</div>
       <div style="display:flex;gap:10px;margin-bottom:6px">
         <button class="qbtn" style="flex:1" id="aMusic"><b>Relancer la musique</b><span id="aMusicTxt">—</span></button>
         <button class="qbtn" style="flex:1" id="aNav"><b>Ouvrir le GPS</b><span id="aNavTxt">—</span></button>
       </div>
-      <div style="font-size:15px;font-weight:700;margin:14px 0 8px">Bluetooth Android</div>
-      <div id="diagBt" class="muted" style="font-size:14px;line-height:1.7"></div>
+      <div style="font-size:15px;font-weight:700;margin:14px 0 8px">Applis liées à la voiture</div>
+      <div id="diagPk" class="muted" style="font-size:14px;line-height:1.7"></div>
     </div>
   </div>
   <div class="muted" style="font-size:13px">Prends cet écran en photo et envoie-le-moi.</div>
