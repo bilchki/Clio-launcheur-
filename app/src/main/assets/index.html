@@ -224,6 +224,7 @@ button{font-family:inherit;color:inherit;cursor:pointer}
       <button class="qbtn" style="width:190px" id="setHome"><b>Définir comme accueil</b><span>Réglage Android</span></button>
       <button class="qbtn" style="width:150px" id="setAndroid"><b>Réglages Android</b><span>Ouvrir</span></button>
       <button class="qbtn" style="width:150px" id="qDoor"><b>Test porte</b><span>Aperçu pop-up</span></button>
+      <button class="qbtn" style="width:170px;background:linear-gradient(160deg,#4C93FF,#1F5FE0);border:none" id="qUpdate"><b>Mettre à jour</b><span style="color:#E3ECFB">Dernière version</span></button>
     </div>
   </div>
   <div style="flex:1;min-height:0;display:flex;gap:14px">
@@ -231,6 +232,11 @@ button{font-family:inherit;color:inherit;cursor:pointer}
     <div class="card" style="flex:1;padding:16px 20px;overflow-y:auto">
       <div style="font-size:15px;font-weight:700;margin-bottom:8px">Applis liées à la voiture</div>
       <div id="diagPk" class="muted" style="font-size:14px;line-height:1.7"></div>
+      <div style="font-size:15px;font-weight:700;margin:14px 0 8px">Au démarrage de l’autoradio</div>
+      <div style="display:flex;gap:10px;margin-bottom:6px">
+        <button class="qbtn" style="flex:1" id="aMusic"><b>Relancer la musique</b><span id="aMusicTxt">—</span></button>
+        <button class="qbtn" style="flex:1" id="aNav"><b>Ouvrir le GPS</b><span id="aNavTxt">—</span></button>
+      </div>
       <div style="font-size:15px;font-weight:700;margin:14px 0 8px">Bluetooth Android</div>
       <div id="diagBt" class="muted" style="font-size:14px;line-height:1.7"></div>
     </div>
@@ -541,6 +547,18 @@ $('#sSave').onclick=function(){var c=car();c.fuelType=$('#sFuelType').value;c.cc
  store('car',c);if(modeChanged)startObd();toast('Réglages enregistrés');renderCar();go('car')};
 function startObd(){if(!A)return;var c=car();if(c.obdMode==='off'){A.obdStop();onObdStatus('off');return}A.obdStart(c.obdMode,c.obdTarget||'')}
 startObd();renderCar();
+
+/* ================= DÉMARRAGE AUTO & MISE À JOUR ================= */
+function autoCfg(){var a=store('auto');if(!a)a={music:true,nav:true};return a}
+function renderAuto(){var a=autoCfg();$('#aMusicTxt').textContent=a.music?'Activé':'Désactivé';$('#aMusicTxt').style.color=a.music?'#3FD47F':'#A7AFBB';
+ $('#aNavTxt').textContent=a.nav?'Activé':'Désactivé';$('#aNavTxt').style.color=a.nav?'#3FD47F':'#A7AFBB'}
+$('#aMusic').onclick=function(){var a=autoCfg();a.music=!a.music;store('auto',a);renderAuto()};
+$('#aNav').onclick=function(){var a=autoCfg();a.nav=!a.nav;store('auto',a);renderAuto()};
+renderAuto();
+window.onAutoStart=function(reason){if(!A)return;var a=autoCfg();
+ if(a.music)A.mediaPlay();
+ if(a.nav){var p=slot('nav');if(p)setTimeout(function(){A.launch(p)},2500)}};
+$('#qUpdate').onclick=function(){if(A)A.openUrl('https://github.com/bilchki/Clio-launcheur-/releases/latest/download/ClioLauncher.apk')};
 </script>
 </body>
 </html>

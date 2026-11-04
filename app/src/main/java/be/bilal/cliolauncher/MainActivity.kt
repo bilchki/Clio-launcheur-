@@ -6,7 +6,12 @@ import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.content.ComponentName
 import android.content.Context
+import android.content.BroadcastReceiver
 import android.content.Intent
+import android.content.IntentFilter
+import android.media.AudioManager
+import android.os.SystemClock
+import android.view.KeyEvent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -44,6 +49,19 @@ class MainActivity : Activity() {
     private var artKey: String = ""
     private var artB64: String = ""
     private lateinit var obd: Obd
+    private var lastAuto = 0L
+
+    // Démarrage automatique : au démarrage de l'autoradio et au réveil de l'écran
+    private val wakeReceiver = object : BroadcastReceiver() {
+        override fun onReceive(c: Context?, i: Intent?) { autoStart("wake") }
+    }
+
+    private fun autoStart(reason: String) {
+        val now = SystemClock.elapsedRealtime()
+        if (lastAuto != 0L && now - lastAuto < 120000) return
+        lastAuto = now
+        handler.postDelayed({ js("window.onAutoStart && window.onAutoStart('$reason')") }, 4000)
+    }
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -66,6 +84,9 @@ class MainActivity : Activity() {
             onStatus = { st -> js("window.onObdStatus && window.onObdStatus('$st')") }
         )
 
+        try { registerReceiver(wakeReceiver, IntentFilter(Intent.ACTION_SCREEN_ON)) } catch (e: Exception) { }
+        if (SystemClock.elapsedRealtime() < 180000) autoStart("boot")
+
         val need = ArrayList<String>()
         if (Build.VERSION.SDK_INT >= 23 &&
             checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
@@ -78,6 +99,7 @@ class MainActivity : Activity() {
 
     override fun onDestroy() {
         try { obd.stop() } catch (e: Exception) { }
+        try { unregisterReceiver(wakeReceiver) } catch (e: Exception) { }
         try { (getSystemService(Context.LOCATION_SERVICE) as LocationManager).removeUpdates(gpsListener) } catch (e: Exception) { }
         super.onDestroy()
     }
@@ -285,6 +307,20 @@ class MainActivity : Activity() {
         @JavascriptInterface
         fun openSettings() {
             try { startActivity(Intent(Settings.ACTION_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) } catch (e: Exception) { }
+        }
+
+        @JavascriptInterface
+        fun mediaPlay() {
+            try {
+                val am = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+                am.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PLAY))
+                am.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_PLAY))
+            } catch (e: Exception) { }
+        }
+
+        @JavascriptInterface
+        fun openUrl(url: String) {
+            try { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) } catch (e: Exception) { }
         }
 
         @JavascriptInterface
