@@ -50,6 +50,35 @@ class MainActivity : Activity() {
     private var artB64: String = ""
     private lateinit var obd: Obd
     private var lastAuto = 0L
+    private val lastKeys = ArrayList<String>()
+
+    /**
+     * Commandes au volant : on traite nous-mêmes le volume pour qu'il ne soit
+     * jamais « avalé » par l'affichage web. Les autres touches (piste suivante,
+     * etc.) repartent vers le système comme d'habitude.
+     */
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        if (event.action == KeyEvent.ACTION_DOWN) {
+            synchronized(lastKeys) {
+                lastKeys.add(0, KeyEvent.keyCodeToString(event.keyCode))
+                while (lastKeys.size > 6) lastKeys.removeAt(lastKeys.size - 1)
+            }
+        }
+        val am = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        val dir = when (event.keyCode) {
+            KeyEvent.KEYCODE_VOLUME_UP -> AudioManager.ADJUST_RAISE
+            KeyEvent.KEYCODE_VOLUME_DOWN -> AudioManager.ADJUST_LOWER
+            KeyEvent.KEYCODE_VOLUME_MUTE -> AudioManager.ADJUST_TOGGLE_MUTE
+            else -> null
+        }
+        if (dir != null) {
+            if (event.action == KeyEvent.ACTION_DOWN) {
+                try { am.adjustStreamVolume(AudioManager.STREAM_MUSIC, dir, AudioManager.FLAG_SHOW_UI) } catch (e: Exception) { }
+            }
+            return true
+        }
+        return super.dispatchKeyEvent(event)
+    }
 
     // Démarrage automatique : au démarrage de l'autoradio et au réveil de l'écran
     private val wakeReceiver = object : BroadcastReceiver() {
@@ -324,6 +353,25 @@ class MainActivity : Activity() {
                 am.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_PLAY))
             } catch (e: Exception) { }
         }
+
+        @JavascriptInterface
+        fun mediaKey(which: String) {
+            val code = when (which) {
+                "next" -> KeyEvent.KEYCODE_MEDIA_NEXT
+                "prev" -> KeyEvent.KEYCODE_MEDIA_PREVIOUS
+                "play" -> KeyEvent.KEYCODE_MEDIA_PLAY
+                "pause" -> KeyEvent.KEYCODE_MEDIA_PAUSE
+                else -> KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE
+            }
+            try {
+                val am = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+                am.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, code))
+                am.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_UP, code))
+            } catch (e: Exception) { }
+        }
+
+        @JavascriptInterface
+        fun keys(): String = synchronized(lastKeys) { lastKeys.joinToString(" · ").replace("KEYCODE_", "") }
 
         @JavascriptInterface
         fun bringHome() {
